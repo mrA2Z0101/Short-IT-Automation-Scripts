@@ -120,6 +120,8 @@ Scans all 254 host addresses on a /24 subnet and reports which ones are online. 
 
 > ⏱️ This script may take 1–3 minutes to complete depending on network size.
 
+> ⚠️ **PowerShell 5.1 Users:** The `-TimeoutSeconds` parameter is not supported in PowerShell 5.1 and will throw an error. Remove `-TimeoutSeconds 1` from the `Test-Connection` line to fix it. Note that without it, each failed ping will wait the full default timeout (~4 seconds), making the sweep significantly slower. To use `-TimeoutSeconds`, upgrade to [PowerShell 7](https://github.com/PowerShell/PowerShell/releases).
+
 ---
 
 ### 4. List Local Admin Accounts
@@ -181,6 +183,13 @@ Cleaned approx 1.34 MB of temp files.
 
 **Q: The Ping Sweep is taking forever. Is that normal?**
 > Yes, scanning all 254 addresses sequentially can take a few minutes. If you need speed, you can reduce the range by editing `1..254` in the script to a smaller range like `1..50`.
+
+**Q: I get "A parameter cannot be found that matches parameter name 'TimeoutSeconds'" on the Ping Sweep. How do I fix it?**
+> This means you're running PowerShell 5.1, where `-TimeoutSeconds` does not exist — it was added in PowerShell 6+. Remove `-TimeoutSeconds 1` from the `Test-Connection` line:
+> ```powershell
+> if (Test-Connection -ComputerName $ip -Count 1 -Quiet) {
+> ```
+> The sweep will still work but will run slower since each failed ping waits the full default timeout. To restore full speed, upgrade to [PowerShell 7](https://github.com/PowerShell/PowerShell/releases). You can check your current version by running `$PSVersionTable.PSVersion`.
 
 **Q: Will the Clear Temp Files script delete anything important?**
 > It only targets known safe temp locations (`%TEMP%`, `C:\Windows\Temp`, `C:\Windows\Prefetch`). However, always test scripts in a non-production environment first before running them widely.
